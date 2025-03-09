@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Personal Finance Tracker</h1>
+        
+        <div class="balance">
+            <h2>Current Balance: $<span id="balance">0.00</span></h2>
+            <!-- Add FAQ Button -->
+            <button id="faq-btn" onclick="openFAQ()">FAQ</button>
+        </div>
+
+        <!-- Add the FAQ Modal -->
+        <div id="faq-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeFAQ()">&times;</span>
+                <h2>How to Use the Finance Tracker</h2>
+                <p>
+                    <strong>1. Adding a Transaction:</strong><br>
+                    - Enter a description, amount, category, and date.<br>
+                    - Click "Add Transaction" to save it.<br><br>
+
+                    <strong>2. Editing a Transaction:</strong><br>
+                    - Click the "Edit" button next to a transaction.<br>
+                    - Modify the details in the form and click "Save Changes".<br><br>
+
+                    <strong>3. Deleting a Transaction:</strong><br>
+                    - Click the "X" button next to a transaction to delete it.<br><br>
+
+                    <strong>4. Searching Transactions:</strong><br>
+                    - Use the search bar to filter transactions by description.<br><br>
+
+                    <strong>5. Generating Reports:</strong><br>
+                    - Click "Show Summary" to see a pie chart of expenses by category.<br>
+                    - Click "Weekly Summary" or "Monthly Summary" to see a line graph of your balance over time.<br><br>
+
+                    <strong>6. FAQ:</strong><br>
+                    - Click the "FAQ" button to see this guide anytime!
+                </p>
+            </div>
+        </div>
+
+        <div class="transaction-form">
+            <input type="text" id="description" placeholder="Description">
+            <input type="number" id="amount" placeholder="Amount">
+            <select id="category">
+                <option value="income">Income</option>
+                <option value="food">Food</option>
+                <option value="transport">Transport</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="other">Other</option>
+            </select>
+            <input type="date" id="date">
+            <button id="add-transaction-btn" onclick="addTransaction()">Add Transaction</button>
+        </div>
+
+        <h3>Transactions</h3>
+        <input type="text" id="search" placeholder="Search transactions" onkeyup="filterTransactions()">
+        <ul id="transactions"></ul>
+
+        <h3>Reports</h3>
+        <button onclick="generateReport()">Show Summary</button>
+        <button onclick="generateWeeklySummary()">Weekly Summary</button>
+        <button onclick="generateMonthlySummary()">Monthly Summary</button>
+        <div id="report"></div>
+
+        <canvas id="expenseChart"></canvas>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
