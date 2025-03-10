@@ -18,6 +18,7 @@ body {
     width: 100%;
     margin: 5px 0;
     padding: 10px;
+    box-sizing: border-box;
 }
 
 button {
@@ -107,4 +108,26 @@ ul li {
 
 .close-btn:hover {
     color: black;
+}
+
+/* Amount Input with $ Symbol */
+.amount-container {
+    position: relative;
+    width: 100%;
+}
+
+.currency-symbol {
+    position: absolute;
+    left: 10px;
+    top: 49%;
+    transform: translateY(-50%);
+    color: #555;
+    font-size: 14px;
+    pointer-events: none; /* Prevents the symbol from blocking clicks */
+}
+
+#amount {
+    width: 100%;
+    padding-left: 17px; /* Add space for the $ symbol */
+    box-sizing: border-box; /* Ensures padding doesn't affect width */
 }

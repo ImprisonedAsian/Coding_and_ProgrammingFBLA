@@ -49,7 +49,10 @@
 
         <div class="transaction-form">
             <input type="text" id="description" placeholder="Description">
-            <input type="number" id="amount" placeholder="Amount">
+            <div class="amount-container">
+                <span class="currency-symbol">$</span>
+                <input type="text" id="amount" placeholder="Amount">
+            </div>
             <select id="category">
                 <option value="income">Income</option>
                 <option value="food">Food</option>
@@ -57,7 +60,7 @@
                 <option value="entertainment">Entertainment</option>
                 <option value="other">Other</option>
             </select>
-            <input type="date" id="date">
+            <input type="date" id="date" max="">
             <button id="add-transaction-btn" onclick="addTransaction()">Add Transaction</button>
         </div>
 
