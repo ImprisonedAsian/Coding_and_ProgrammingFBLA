@@ -13,11 +13,10 @@
         
         <div class="balance">
             <h2>Current Balance: $<span id="balance">0.00</span></h2>
-            <!-- Add FAQ Button -->
             <button id="faq-btn" onclick="openFAQ()">FAQ</button>
         </div>
 
-        <!-- Add the FAQ Modal -->
+        <!-- FAQ Modal -->
         <div id="faq-modal" class="modal">
             <div class="modal-content">
                 <span class="close-btn" onclick="closeFAQ()">&times;</span>
@@ -72,11 +71,25 @@
         <button onclick="generateReport()">Show Summary</button>
         <button onclick="generateWeeklySummary()">Weekly Summary</button>
         <button onclick="generateMonthlySummary()">Monthly Summary</button>
+        <button id="export-csv-btn" onclick="exportToCSV()">Export Transactions to CSV</button> 
         <div id="report"></div>
 
         <canvas id="expenseChart"></canvas>
     </div>
 
     <script src="script.js"></script>
+    <!-- Chatbot Button -->
+<button id="chatbot-btn" onclick="openChatbot()">💬</button>
+
+<!-- Chatbot Modal -->
+<div id="chatbot-modal" class="chatbot-modal">
+    <div class="chatbot-content">
+        <span class="close" onclick="closeChatbot()">&times;</span>
+        <div id="chatbot-messages"></div>
+        <input type="text" id="chatbot-input" placeholder="Ask me anything..." onkeypress="if(event.key==='Enter') sendMessage()">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
 </body>
 </html>

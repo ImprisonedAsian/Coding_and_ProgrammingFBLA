@@ -14,6 +14,119 @@ document.addEventListener("click", function (event) {
     }
 });
 
+async function checkModelAccess() {
+    try {
+        const response = await fetch("https://api.openai.com/v1/models", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer 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`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Available Models:", data.data);
+
+        // Check if gpt-3.5-turbo is in the list
+        const hasAccess = data.data.some(model => model.id === "gpt-3.5-turbo");
+        if (hasAccess) {
+            console.log("Access to gpt-3.5-turbo: YES");
+        } else {
+            console.log("Access to gpt-3.5-turbo: NO");
+        }
+    } catch (error) {
+        console.error("Error checking model access:", error);
+    }
+}
+
+checkModelAccess();
+
+// AI Chatbot Modal Functions
+function openChatbot() {
+    document.getElementById("chatbot-modal").style.display = "block";
+}
+
+function closeChatbot() {
+    document.getElementById("chatbot-modal").style.display = "none";
+}
+
+document.addEventListener("click", function (event) {
+    let modal = document.getElementById("chatbot-modal");
+    if (event.target === modal) {
+        modal.style.display = "none";
+    }
+});
+
+async function sendMessage() {
+    let userInput = document.getElementById("chatbot-input").value;
+    if (!userInput.trim()) return;
+
+    let chatbox = document.getElementById("chatbot-messages");
+    chatbox.innerHTML += `<div class='user-message'>${userInput}</div>`;
+    document.getElementById("chatbot-input").value = "";
+
+    // Show loading indicator
+    chatbox.innerHTML += `<div class='ai-message' id="loading">Thinking...</div>`;
+    chatbox.scrollTop = chatbox.scrollHeight;
+
+    // Get the current balance and transactions
+    let balance = parseFloat(document.getElementById("balance").textContent);
+    let transactionsList = JSON.parse(localStorage.getItem("transactions")) || [];
+
+    // Prepare the context for the AI
+    let context = `
+        You are a helpful financial assistant integrated into a personal finance tracker tool. 
+        The user's current balance is $${balance.toFixed(2)}. 
+        Here is a list of their recent transactions:
+        ${transactionsList.map(t => `${t.description} - $${t.amount.toFixed(2)} (${t.category}, ${t.date})`).join("\n")}
+
+        Your tasks are:
+        1. Explain how to use the finance tracker tool (e.g., adding transactions, editing, deleting, generating reports).
+        2. Analyze the user's transactions and provide feedback on their spending habits.
+        3. Offer suggestions to improve their financial health based on their current balance and transactions.
+
+        The user has asked: "${userInput}"
+    `;
+
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer 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`
+            },
+            body: JSON.stringify({
+                model: "gpt-3.5-turbo",
+                messages: [
+                    { role: "system", content: context }, // Provide context to the AI
+                    { role: "user", content: userInput }  // User's input
+                ]
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        let aiMessage = data.choices[0].message.content;
+
+        // Remove loading indicator and show AI response
+        document.getElementById("loading").remove();
+        chatbox.innerHTML += `<div class='ai-message'>${aiMessage}</div>`;
+        chatbox.scrollTop = chatbox.scrollHeight;
+    } catch (error) {
+        console.error("Error:", error);
+        document.getElementById("loading").remove();
+        chatbox.innerHTML += `<div class='ai-message'>Error: Unable to get a response from the AI.</div>`;
+    }
+}
+
+
 // Existing JavaScript Code
 let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
 let editingIndex = null;
@@ -100,6 +213,16 @@ function addTransaction() {
     localStorage.setItem("transactions", JSON.stringify(transactions));
     updateUI();
     clearForm();
+
+    // Regenerate the currently displayed summary if applicable
+    if (currentSummary === "weekly") {
+        generateWeeklySummary();
+    } else if (currentSummary === "monthly") {
+        generateMonthlySummary();
+    }
+    else if (currentSummary === "report"){
+        generateReport();
+    }
 }
 
 function updateUI() {
@@ -140,7 +263,17 @@ function deleteTransaction(index) {
     transactions.splice(index, 1);
     localStorage.setItem("transactions", JSON.stringify(transactions));
     updateUI();
+
+    // Update the correct summary or report when deleting a transaction
+    if (currentSummary === "weekly") {
+        generateWeeklySummary();
+    } else if (currentSummary === "monthly") {
+        generateMonthlySummary();
+    } else if (currentSummary === "report") {
+        generateReport(); // Regenerate the pie chart when on the report view
+    }
 }
+
 
 function clearForm() {
     document.getElementById("description").value = "";
@@ -168,6 +301,8 @@ function filterTransactions() {
     });
 }
 
+let currentSummary = null; // Tracks the currently displayed summary ("weekly" or "monthly")
+
 function generateReport() {
     let categories = {};
     transactions.forEach(t => {
@@ -193,9 +328,10 @@ function generateReport() {
                 backgroundColor: ["red", "blue", "green", "yellow"]
             }]
         }
-    });
 
+    })
     document.getElementById("report").innerHTML = "Expense Summary Generated!";
+currentSummary = "report";
 }
 
 function generateSummary(days, label) {
@@ -363,10 +499,32 @@ function renderBalanceGraph(labels, balanceData, expensesData, incomeData, foodD
 
 function generateWeeklySummary() {
     generateSummary(7, "Past 7 Days");
+    currentSummary = "weekly"; // Set the current summary to weekly
 }
 
 function generateMonthlySummary() {
     generateSummary(30, "Past 30 Days");
+    currentSummary = "monthly"; // Set the current summary to monthly
 }
+function exportToCSV() {
+    // Create CSV content
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Description,Amount,Category,Date\n"; // Header row
 
+    // Add each transaction as a row
+    transactions.forEach(transaction => {
+        csvContent += `${transaction.description},${transaction.amount},${transaction.category},${transaction.date}\n`;
+    });
+
+    // Create a downloadable link
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "transactions.csv");
+    document.body.appendChild(link);
+
+    // Trigger the download
+    link.click();
+    document.body.removeChild(link);
+}
 updateUI();
